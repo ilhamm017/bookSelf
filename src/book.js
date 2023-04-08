@@ -1,5 +1,5 @@
 class Book {
-  constructor(
+  constructor (
     id,
     name,
     year,
@@ -59,8 +59,8 @@ class Book {
     this.publisher = publisher
     this.pageCount = pageCount
     this.readPage = readPage
-    this.reading = pageCount === readPage
     this.finished = pageCount === readPage
+    this.reading = reading
     this.insertedAt = insertedAt
     this.updatedAt = updatedAt
   }

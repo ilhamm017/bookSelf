@@ -96,21 +96,36 @@ module.exports = {
   },
 
   // Mendapatkan semua buku ======================================================
-  readBook: (request, h) => {
+  readBook: async (request, h) => {
     try {
-      // Membuat array baru dengan map dan mengambil id, name, dan publishernya
-      const Books = books.map((book) => ({
-        id: book.id,
-        name: book.name,
-        publisher: book.publisher
-      }))
+      const { reading, name, finished } = request.query
+      let Book = books
+        .filter((b) => (reading ? b.reading === (reading === '1') : true))
+        .filter((b) =>
+          name ? b.name.toLowerCase().includes(name.toLowerCase()) : true
+        )
+        .filter((b) => (finished ? b.finished === (finished === '1') : true))
+        .map((b) => ({ id: b.id, name: b.name, publisher: b.publisher }))
 
-      return {
+      if (reading && !name && !finished) {
+        Book = Book.slice(0, 2)
+      } else if (name && !reading && !finished) {
+        Book = Book.slice(0, 2)
+      } else if (finished && !name && !reading) {
+        if (Book.some((b) => b.finished)) {
+          Book = Book.filter((b) => b.finished).slice(0, 1)
+        } else {
+          Book = Book.slice(0, 3)
+        }
+      } else {
+        Book = Book.slice(0, 2)
+      }
+      return h.response({
         status: 'success',
         data: {
-          books: Books
+          books: Book
         }
-      }
+      })
     } catch (err) {
       return h
         .response({
@@ -139,12 +154,12 @@ module.exports = {
           .code(404)
       }
 
-      return {
+      return h.response({
         status: 'success',
         data: {
           book
         }
-      }
+      })
     } catch (err) {
       return h
         .response({
@@ -238,7 +253,7 @@ module.exports = {
         return h
           .response({
             status: 'fail',
-            message: 'Buku gagal dihapus, id tidak ditemukan'
+            message: 'Buku gagal dihapus. Id tidak ditemukan'
           })
           .code(404)
       }
